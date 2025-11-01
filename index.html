@@ -100,6 +100,12 @@
   </div>
 
   <script>
+    // 🔊 Sonidos del Buscaminas
+    const soundClick = new Audio('sounds/click.wav');
+    const soundFlag = new Audio('sounds/flag.wav');
+    const soundExplosion = new Audio('sounds/explosion.wav');
+    const soundWin = new Audio('sounds/win.wav');
+
     const rows = 8;
     const cols = 8;
     const mineCount = 10;
@@ -172,8 +178,10 @@
       if (cell.mine) {
         cell.element.textContent = "💣";
         cell.element.classList.add("mine");
+        soundExplosion.play(); // 💥 Sonido de explosión
         endGame(false);
       } else {
+        soundClick.play(); // 🎵 Sonido al hacer clic en una celda
         if (cell.adjacent > 0) {
           cell.element.textContent = cell.adjacent;
         } else {
@@ -193,10 +201,12 @@
       if (cell.revealed || gameOver) return;
       cell.flagged = !cell.flagged;
       cell.element.classList.toggle("flag");
+      soundFlag.play(); // 🚩 Sonido al colocar bandera
     }
 
     function endGame(win) {
       gameOver = true;
+      if (win) soundWin.play(); // 🏆 Sonido de victoria
       resetBtn.textContent = win ? "😎" : "💀";
       if (!win) {
         for (let r = 0; r < rows; r++) {
