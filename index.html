@@ -130,7 +130,6 @@
       content: "🚩";
     }
 
-    /* Números con colores clásicos */
     .cell.revealed[data-num="1"] { color: #0000ff; }
     .cell.revealed[data-num="2"] { color: #007b00; }
     .cell.revealed[data-num="3"] { color: #ff0000; }
@@ -139,16 +138,6 @@
     .cell.revealed[data-num="6"] { color: #007b7b; }
     .cell.revealed[data-num="7"] { color: #000000; }
     .cell.revealed[data-num="8"] { color: #7b7b7b; }
-
-    @media (max-width: 450px) {
-      .game-container {
-        width: 100%;
-        padding: 8px;
-      }
-      .board {
-        grid-template-columns: repeat(8, 1fr);
-      }
-    }
   </style>
 </head>
 <body>
@@ -162,7 +151,7 @@
   </div>
 
   <script>
-    // 🔊 Sonidos del Buscaminas
+    // 🔊 Sonidos
     const soundClick = new Audio('sounds/click.wav');
     const soundFlag = new Audio('sounds/flag.wav');
     const soundExplosion = new Audio('sounds/explosion.wav');
@@ -224,7 +213,6 @@
       countAdjacents();
     }
 
-    // 💣 Minas aleatorias
     function placeMines() {
       let placed = 0;
       while (placed < totalMines) {
@@ -265,6 +253,7 @@
         cell.element.textContent = "💣";
         cell.element.classList.add("mine");
         soundExplosion.play();
+        vibrateLose(); // 💥 vibración derrota
         endGame(false);
       } else {
         soundClick.play();
@@ -283,6 +272,19 @@
       }
 
       checkWin();
+    }
+
+    // 📱 Vibración personalizada
+    function vibrateLose() {
+      if (navigator.vibrate) {
+        navigator.vibrate([150, 80, 150, 120, 250]); // patrón fuerte tipo explosión
+      }
+    }
+
+    function vibrateWin() {
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]); // patrón corto tipo "celebración"
+      }
     }
 
     function toggleFlag(r, c) {
@@ -304,8 +306,12 @@
       gameOver = true;
       stopTimer();
       resetBtn.textContent = win ? "😎" : "💀";
-      if (win) soundWin.play();
-      else soundExplosion.play();
+      if (win) {
+        soundWin.play();
+        vibrateWin(); // 🎉 vibración victoria
+      } else {
+        soundExplosion.play();
+      }
 
       if (!win) {
         for (let r = 0; r < rows; r++) {
