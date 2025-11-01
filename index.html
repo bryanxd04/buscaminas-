@@ -109,7 +109,7 @@
     // ⚙️ Variables principales
     const rows = 8;
     const cols = 8;
-    const mineCount = 10;
+    const totalMines = 10;
     const board = document.getElementById("board");
     const mineCounter = document.getElementById("mineCounter");
     const resetBtn = document.getElementById("resetBtn");
@@ -120,8 +120,9 @@
     let started = false;
     let timer = null;
     let seconds = 0;
+    let minesLeft = totalMines; // 🔢 minas restantes visibles
 
-    // 🕐 Funciones del temporizador
+    // 🕐 Temporizador
     function startTimer() {
       if (started) return;
       started = true;
@@ -148,9 +149,11 @@
       gameOver = false;
       started = false;
       resetBtn.textContent = "🙂";
-      mineCounter.textContent = String(mineCount).padStart(3, "0");
-      timerDisplay.textContent = "000";
+      seconds = 0;
       stopTimer();
+      timerDisplay.textContent = "000";
+      minesLeft = totalMines;
+      mineCounter.textContent = String(minesLeft).padStart(3, "0");
 
       for (let r = 0; r < rows; r++) {
         const row = [];
@@ -168,10 +171,10 @@
       countAdjacents();
     }
 
-    // 💣 Colocar minas aleatoriamente
+    // 💣 Colocar minas
     function placeMines() {
       let minesPlaced = 0;
-      while (minesPlaced < mineCount) {
+      while (minesPlaced < totalMines) {
         const r = Math.floor(Math.random() * rows);
         const c = Math.floor(Math.random() * cols);
         if (!grid[r][c].mine) {
@@ -205,7 +208,7 @@
       const cell = grid[r][c];
       if (cell.revealed || cell.flagged || gameOver) return;
 
-      startTimer(); // 🕐 Inicia al primer clic
+      startTimer();
       cell.revealed = true;
       cell.element.classList.add("revealed");
 
@@ -231,13 +234,28 @@
       checkWin();
     }
 
-    // 🚩 Colocar o quitar bandera
+    // 🚩 Colocar o quitar bandera con contador dinámico
     function toggleFlag(r, c) {
       const cell = grid[r][c];
       if (cell.revealed || gameOver) return;
+
+      // alterna estado
       cell.flagged = !cell.flagged;
       cell.element.classList.toggle("flag");
-      soundFlag.play();
+
+      // 🔢 actualiza contador visible
+      if (cell.flagged) {
+        minesLeft--;
+        soundFlag.play();
+      } else {
+        minesLeft++;
+      }
+
+      // evita que muestre negativos o más de 999
+      if (minesLeft < 0) minesLeft = 0;
+      if (minesLeft > 999) minesLeft = 999;
+
+      mineCounter.textContent = String(minesLeft).padStart(3, "0");
     }
 
     // 💀 Terminar juego
@@ -290,6 +308,7 @@
 
     resetBtn.addEventListener("click", createBoard);
 
+    // Iniciar juego
     createBoard();
   </script>
 </body>
