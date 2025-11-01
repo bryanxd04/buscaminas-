@@ -1,354 +1,260 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Buscaminas - Bryan Rocha Moreno</title>
-  <style>
-    /* ======== OPTIMIZADO WINDOWS 7 RESPONSIVE ======== */
-    :root {
-      --gray-light: #bdbdbd;
-      --gray-dark: #7b7b7b;
-      --highlight: #ffffff;
-      --bg: #9c9c9c;
-      --danger: #ff4c4c;
-    }
-
-    body {
-      background: var(--bg);
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 10px;
-    }
-
-    .game-container {
-      background: var(--gray-light);
-      border: 3px solid var(--gray-dark);
-      box-shadow:
-        inset 3px 3px var(--highlight),
-        inset -3px -3px var(--gray-dark),
-        3px 3px 6px rgba(0, 0, 0, 0.4);
-      padding: 10px;
-      border-radius: 3px;
-      width: min(95vw, 400px);
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--gray-light);
-      border: 3px solid var(--gray-dark);
-      box-shadow:
-        inset 3px 3px var(--highlight),
-        inset -3px -3px var(--gray-dark);
-      padding: 5px 8px;
-      margin-bottom: 10px;
-      border-radius: 3px;
-    }
-
-    .counter, .timer {
-      background: black;
-      color: red;
-      font-family: monospace;
-      font-size: clamp(16px, 5vw, 22px);
-      padding: 4px 8px;
-      border: 2px inset var(--gray-dark);
-      width: 60px;
-      text-align: right;
-      border-radius: 3px;
-    }
-
-    .smiley {
-      background: linear-gradient(180deg, #e5e5e5, #bdbdbd);
-      border: 3px outset #fff;
-      width: clamp(30px, 10vw, 38px);
-      height: clamp(30px, 10vw, 38px);
-      text-align: center;
-      line-height: clamp(30px, 10vw, 38px);
-      font-size: clamp(20px, 6vw, 26px);
-      cursor: pointer;
-      border-radius: 4px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-      transition: all 0.1s ease;
-      user-select: none;
-      touch-action: manipulation;
-    }
-
-    .smiley:active {
-      border: 3px inset #7b7b7b;
-      background: #d0d0d0;
-      transform: scale(0.97);
-    }
-
-    .board {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 2px;
-      background: var(--gray-dark);
-      padding: 4px;
-      border: 3px solid var(--gray-dark);
-      box-shadow:
-        inset 2px 2px var(--highlight),
-        inset -2px -2px var(--gray-dark);
-      border-radius: 2px;
-    }
-
-    .cell {
-      background: linear-gradient(180deg, #bdbdbd, #9b9b9b);
-      border: 2px outset #fff;
-      aspect-ratio: 1 / 1;
-      text-align: center;
-      line-height: 1;
-      font-weight: bold;
-      cursor: pointer;
-      user-select: none;
-      color: #000;
-      transition: background 0.1s, border 0.1s;
-      font-size: clamp(14px, 3vw, 20px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cell.revealed {
-      border: 2px inset var(--gray-dark);
-      background: #dcdcdc;
-      color: #111;
-      cursor: default;
-    }
-
-    .cell.mine {
-      background: var(--danger);
-    }
-
-    .cell.flag::after {
-      content: "🚩";
-    }
-
-    .cell.revealed[data-num="1"] { color: #0000ff; }
-    .cell.revealed[data-num="2"] { color: #007b00; }
-    .cell.revealed[data-num="3"] { color: #ff0000; }
-    .cell.revealed[data-num="4"] { color: #00007b; }
-    .cell.revealed[data-num="5"] { color: #7b0000; }
-    .cell.revealed[data-num="6"] { color: #007b7b; }
-    .cell.revealed[data-num="7"] { color: #000000; }
-    .cell.revealed[data-num="8"] { color: #7b7b7b; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Buscaminas - Bryan Rocha Moreno</title>
+<style>
+:root {
+  --gray-light:#bdbdbd;--gray-dark:#7b7b7b;--highlight:#ffffff;--bg:#9c9c9c;--danger:#ff4c4c;
+}
+body{
+  background:var(--bg);
+  font-family:"Segoe UI",Tahoma,Verdana,sans-serif;
+  display:flex;justify-content:center;align-items:center;
+  min-height:100vh;margin:0;padding:10px;
+}
+.game-container{
+  background:var(--gray-light);
+  border:3px solid var(--gray-dark);
+  box-shadow:inset 3px 3px var(--highlight),inset -3px -3px var(--gray-dark),3px 3px 6px rgba(0,0,0,.4);
+  padding:10px;border-radius:3px;width:min(95vw,400px);
+  transition:transform 0.1s ease;
+}
+.header{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--gray-light);
+  border:3px solid var(--gray-dark);
+  box-shadow:inset 3px 3px var(--highlight),inset -3px -3px var(--gray-dark);
+  padding:5px 8px;margin-bottom:10px;border-radius:3px;
+}
+.counter,.timer{
+  background:#000;color:red;font-family:monospace;
+  font-size:clamp(16px,5vw,22px);
+  padding:4px 8px;border:2px inset var(--gray-dark);
+  width:60px;text-align:right;border-radius:3px;
+}
+.smiley{
+  background:linear-gradient(180deg,#e5e5e5,#bdbdbd);
+  border:3px outset #fff;width:clamp(30px,10vw,38px);height:clamp(30px,10vw,38px);
+  text-align:center;line-height:clamp(30px,10vw,38px);
+  font-size:clamp(20px,6vw,26px);
+  cursor:pointer;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.4);
+  transition:transform .1s ease;
+  user-select:none;touch-action:manipulation;
+}
+.smiley:active{transform:scale(.92);}
+.board{
+  display:grid;grid-template-columns:repeat(8,1fr);
+  gap:2px;background:var(--gray-dark);
+  padding:4px;border:3px solid var(--gray-dark);
+  box-shadow:inset 2px 2px var(--highlight),inset -2px -2px var(--gray-dark);
+  border-radius:2px;
+}
+.cell{
+  background:linear-gradient(180deg,#bdbdbd,#9b9b9b);
+  border:2px outset #fff;
+  aspect-ratio:1/1;text-align:center;font-weight:bold;
+  cursor:pointer;user-select:none;color:#000;
+  font-size:clamp(14px,3vw,20px);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .1s ease,background .15s ease;
+}
+.cell.revealed{
+  border:2px inset var(--gray-dark);
+  background:#dcdcdc;color:#111;cursor:default;
+  transform:scale(0.95);
+}
+.cell.mine{background:var(--danger);}
+.cell.flag::after{content:"🚩";}
+.cell.revealed[data-num="1"]{color:#00f;}
+.cell.revealed[data-num="2"]{color:#007b00;}
+.cell.revealed[data-num="3"]{color:#f00;}
+.cell.revealed[data-num="4"]{color:#00007b;}
+.cell.revealed[data-num="5"]{color:#7b0000;}
+.cell.revealed[data-num="6"]{color:#007b7b;}
+.cell.revealed[data-num="7"]{color:#000;}
+.cell.revealed[data-num="8"]{color:#7b7b7b;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%,60%{transform:translateX(-6px);}
+  40%,80%{transform:translateX(6px);}
+}
+</style>
 </head>
 <body>
-  <div class="game-container">
-    <div class="header">
-      <div class="counter" id="mineCounter">010</div>
-      <div class="smiley" id="resetBtn">🙂</div>
-      <div class="timer" id="timer">000</div>
-    </div>
-    <div class="board" id="board"></div>
+<div class="game-container" id="container">
+  <div class="header">
+    <div class="counter" id="mineCounter">010</div>
+    <div class="smiley" id="resetBtn">🙂</div>
+    <div class="timer" id="timer">000</div>
   </div>
+  <div class="board" id="board"></div>
+</div>
 
-  <script>
-    // 🔊 Sonidos
-    const soundClick = new Audio('sounds/click.wav');
-    const soundFlag = new Audio('sounds/flag.wav');
-    const soundExplosion = new Audio('sounds/explosion.wav');
-    const soundWin = new Audio('sounds/win.wav');
+<script>
+// 🔊 Sonidos
+const soundClick=new Audio('sounds/click.wav');
+const soundFlag=new Audio('sounds/flag.wav');
+const soundExplosion=new Audio('sounds/explosion.wav');
+const soundWin=new Audio('sounds/win.wav');
 
-    const rows = 8, cols = 8, totalMines = 10;
-    const board = document.getElementById("board");
-    const mineCounter = document.getElementById("mineCounter");
-    const resetBtn = document.getElementById("resetBtn");
-    const timerDisplay = document.getElementById("timer");
+const rows=8,cols=8,totalMines=10;
+const board=document.getElementById("board");
+const mineCounter=document.getElementById("mineCounter");
+const resetBtn=document.getElementById("resetBtn");
+const timerDisplay=document.getElementById("timer");
+const container=document.getElementById("container");
 
-    let grid = [], gameOver = false, started = false;
-    let timer = null, seconds = 0, minesLeft = totalMines;
+let grid=[],gameOver=false,started=false;
+let timer=null,seconds=0,minesLeft=totalMines;
 
-    // 🕐 Temporizador
-    function startTimer() {
-      if (started) return;
-      started = true;
-      timer = setInterval(() => {
-        if (!gameOver) {
-          seconds++;
-          if (seconds > 999) seconds = 999;
-          timerDisplay.textContent = String(seconds).padStart(3, "0");
-        }
-      }, 1000);
-    }
+// Vibración segura
+function vibrate(p){if("vibrate"in navigator)try{navigator.vibrate(p);}catch(e){}}
+document.body.addEventListener("touchstart",()=>{vibrate(0);},{once:true});
+function vibrateLose(){vibrate([150,80,150,120,250]);}
+function vibrateWin(){vibrate([100,60,100]);}
 
-    function stopTimer() {
-      clearInterval(timer);
-      started = false;
-    }
+// Animación shake del tablero
+function shakeBoard(){
+  container.style.animation="shake 0.45s cubic-bezier(.36,.07,.19,.97) both";
+  setTimeout(()=>container.style.animation="",500);
+}
 
-    // 🧩 Crear tablero
-    function createBoard() {
-      grid = [];
-      board.innerHTML = "";
-      gameOver = false;
-      started = false;
-      seconds = 0;
-      stopTimer();
-      timerDisplay.textContent = "000";
-      minesLeft = totalMines;
-      mineCounter.textContent = String(minesLeft).padStart(3, "0");
-      resetBtn.textContent = "🙂";
-
-      for (let r = 0; r < rows; r++) {
-        const row = [];
-        for (let c = 0; c < cols; c++) {
-          const cell = document.createElement("div");
-          cell.classList.add("cell");
-          cell.dataset.row = r;
-          cell.dataset.col = c;
-          board.appendChild(cell);
-          row.push({ element: cell, mine: false, revealed: false, flagged: false, adjacent: 0 });
-        }
-        grid.push(row);
+// 🕐 Temporizador
+function startTimer(){
+  if(started)return;
+  started=true;
+  timer=requestAnimationFrame(updateTimer);
+  let last=performance.now();
+  function updateTimer(now){
+    if(!gameOver){
+      if(now-last>=1000){
+        seconds++;
+        if(seconds>999)seconds=999;
+        timerDisplay.textContent=String(seconds).padStart(3,"0");
+        last=now;
       }
-      placeMines();
-      countAdjacents();
+      timer=requestAnimationFrame(updateTimer);
     }
+  }
+}
+function stopTimer(){cancelAnimationFrame(timer);started=false;}
 
-    function placeMines() {
-      let placed = 0;
-      while (placed < totalMines) {
-        const r = Math.floor(Math.random() * rows);
-        const c = Math.floor(Math.random() * cols);
-        if (!grid[r][c].mine) {
-          grid[r][c].mine = true;
-          placed++;
-        }
-      }
+// Crear tablero
+function createBoard(){
+  grid=[];board.innerHTML="";gameOver=false;started=false;seconds=0;
+  stopTimer();timerDisplay.textContent="000";
+  minesLeft=totalMines;mineCounter.textContent=String(minesLeft).padStart(3,"0");
+  resetBtn.textContent="🙂";
+  for(let r=0;r<rows;r++){
+    const row=[];
+    for(let c=0;c<cols;c++){
+      const cell=document.createElement("div");
+      cell.classList.add("cell");
+      cell.dataset.row=r;cell.dataset.col=c;
+      board.appendChild(cell);
+      row.push({element:cell,mine:false,revealed:false,flagged:false,adjacent:0});
     }
-
-    function countAdjacents() {
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (grid[r][c].mine) continue;
-          let count = 0;
-          for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-              const nr = r + dr, nc = c + dc;
-              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].mine)
-                count++;
-            }
-          }
-          grid[r][c].adjacent = count;
-        }
-      }
+    grid.push(row);
+  }
+  placeMines();countAdjacents();
+}
+function placeMines(){
+  let placed=0;
+  while(placed<totalMines){
+    const r=Math.floor(Math.random()*rows),c=Math.floor(Math.random()*cols);
+    if(!grid[r][c].mine){grid[r][c].mine=true;placed++;}
+  }
+}
+function countAdjacents(){
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if(grid[r][c].mine)continue;
+    let count=0;
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&grid[nr][nc].mine)count++;
     }
+    grid[r][c].adjacent=count;
+  }
+}
 
-    function revealCell(r, c) {
-      const cell = grid[r][c];
-      if (cell.revealed || cell.flagged || gameOver) return;
-      startTimer();
-      cell.revealed = true;
-      cell.element.classList.add("revealed");
+function revealCell(r,c){
+  const cell=grid[r][c];
+  if(cell.revealed||cell.flagged||gameOver)return;
+  startTimer();
+  cell.revealed=true;
+  cell.element.classList.add("revealed");
+  cell.element.style.transform="scale(0.9)";
+  setTimeout(()=>cell.element.style.transform="",150);
 
-      if (cell.mine) {
-        cell.element.textContent = "💣";
-        cell.element.classList.add("mine");
-        soundExplosion.play();
-        vibrateLose(); // 💥 vibración derrota
-        endGame(false);
-      } else {
-        soundClick.play();
-        if (cell.adjacent > 0) {
-          cell.element.textContent = cell.adjacent;
-          cell.element.dataset.num = cell.adjacent;
-        } else {
-          for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-              const nr = r + dr, nc = c + dc;
-              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
-                revealCell(nr, nc);
-            }
-          }
-        }
-      }
-
-      checkWin();
-    }
-
-    // 📱 Vibración personalizada
-    function vibrateLose() {
-      if (navigator.vibrate) {
-        navigator.vibrate([150, 80, 150, 120, 250]); // patrón fuerte tipo explosión
+  if(cell.mine){
+    cell.element.textContent="💣";
+    cell.element.classList.add("mine");
+    soundExplosion.play();vibrateLose();shakeBoard();
+    endGame(false);
+  }else{
+    soundClick.play();
+    if(cell.adjacent>0){
+      cell.element.textContent=cell.adjacent;
+      cell.element.dataset.num=cell.adjacent;
+    }else{
+      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+        const nr=r+dr,nc=c+dc;
+        if(nr>=0&&nr<rows&&nc>=0&&nc<cols)revealCell(nr,nc);
       }
     }
+  }
+  checkWin();
+}
 
-    function vibrateWin() {
-      if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]); // patrón corto tipo "celebración"
-      }
-    }
+function toggleFlag(r,c){
+  const cell=grid[r][c];
+  if(cell.revealed||gameOver)return;
+  cell.flagged=!cell.flagged;
+  cell.element.classList.toggle("flag");
+  if(cell.flagged){minesLeft--;soundFlag.play();}else{minesLeft++;}
+  if(minesLeft<0)minesLeft=0;
+  mineCounter.textContent=String(minesLeft).padStart(3,"0");
+}
 
-    function toggleFlag(r, c) {
-      const cell = grid[r][c];
-      if (cell.revealed || gameOver) return;
-      cell.flagged = !cell.flagged;
-      cell.element.classList.toggle("flag");
-      if (cell.flagged) {
-        minesLeft--;
-        soundFlag.play();
-      } else {
-        minesLeft++;
-      }
-      if (minesLeft < 0) minesLeft = 0;
-      mineCounter.textContent = String(minesLeft).padStart(3, "0");
-    }
+function endGame(win){
+  gameOver=true;stopTimer();
+  resetBtn.textContent=win?"😎":"💀";
+  if(win){soundWin.play();vibrateWin();}
+  else{soundExplosion.play();vibrateLose();shakeBoard();}
+  if(!win)for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
+    if(grid[r][c].mine)grid[r][c].element.textContent="💣";
+}
 
-    function endGame(win) {
-      gameOver = true;
-      stopTimer();
-      resetBtn.textContent = win ? "😎" : "💀";
-      if (win) {
-        soundWin.play();
-        vibrateWin(); // 🎉 vibración victoria
-      } else {
-        soundExplosion.play();
-      }
+function checkWin(){
+  let unrevealed=0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
+    if(!grid[r][c].revealed&&!grid[r][c].mine)unrevealed++;
+  if(unrevealed===0&&!gameOver)endGame(true);
+}
 
-      if (!win) {
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            if (grid[r][c].mine) grid[r][c].element.textContent = "💣";
-          }
-        }
-      }
-    }
-
-    function checkWin() {
-      let unrevealed = 0;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (!grid[r][c].revealed && !grid[r][c].mine) unrevealed++;
-        }
-      }
-      if (unrevealed === 0 && !gameOver) endGame(true);
-    }
-
-    board.addEventListener("click", e => {
-      if (e.target.classList.contains("cell")) {
-        const r = +e.target.dataset.row, c = +e.target.dataset.col;
-        revealCell(r, c);
-      }
-    });
-
-    board.addEventListener("contextmenu", e => {
-      e.preventDefault();
-      if (e.target.classList.contains("cell")) {
-        const r = +e.target.dataset.row, c = +e.target.dataset.col;
-        toggleFlag(r, c);
-      }
-    });
-
-    resetBtn.addEventListener("click", createBoard);
-    createBoard();
-  </script>
+// Eventos
+board.addEventListener("click",e=>{
+  if(e.target.classList.contains("cell")){
+    const r=+e.target.dataset.row,c=+e.target.dataset.col;
+    revealCell(r,c);
+  }
+});
+board.addEventListener("contextmenu",e=>{
+  e.preventDefault();
+  if(e.target.classList.contains("cell")){
+    const r=+e.target.dataset.row,c=+e.target.dataset.col;
+    toggleFlag(r,c);
+  }
+});
+resetBtn.addEventListener("click",()=>{
+  resetBtn.style.transform="scale(0.8)";
+  requestAnimationFrame(()=>resetBtn.style.transform="");
+  createBoard();
+});
+createBoard();
+</script>
 </body>
 </html>
