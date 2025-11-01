@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buscaminas - Bryan Rocha Moreno</title>
   <style>
+    /* ======== ESTILO WINDOWS 7 ======== */
     body {
-      background: #c0c0c0;
+      background: #9c9c9c;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       justify-content: center;
@@ -16,9 +17,13 @@
 
     .game-container {
       background: #bdbdbd;
-      border: 4px solid #808080;
-      box-shadow: inset 4px 4px #ffffff, inset -4px -4px #808080;
-      padding: 10px;
+      border: 3px solid #7b7b7b;
+      box-shadow:
+        inset 3px 3px #ffffff,
+        inset -3px -3px #7b7b7b,
+        3px 3px 6px rgba(0, 0, 0, 0.4);
+      padding: 12px;
+      border-radius: 2px;
     }
 
     .header {
@@ -27,65 +32,99 @@
       align-items: center;
       background: #bdbdbd;
       border: 3px solid #7b7b7b;
-      box-shadow: inset 3px 3px #fff, inset -3px -3px #7b7b7b;
-      padding: 5px 10px;
-      margin-bottom: 10px;
+      box-shadow:
+        inset 3px 3px #ffffff,
+        inset -3px -3px #7b7b7b;
+      padding: 6px 10px;
+      margin-bottom: 12px;
     }
 
     .counter, .timer {
-      background: black;
-      color: red;
-      font-family: monospace;
-      font-size: 20px;
-      padding: 5px 10px;
+      background: #000;
+      color: #ff2b2b;
+      font-family: 'Digital-7', monospace;
+      font-size: 22px;
+      padding: 6px 8px;
       border: 2px inset #7b7b7b;
-      width: 60px;
+      width: 65px;
       text-align: right;
+      box-shadow:
+        inset 2px 2px #222,
+        inset -2px -2px #555;
+      border-radius: 2px;
     }
 
     .smiley {
-      background: #c0c0c0;
+      background: linear-gradient(180deg, #e5e5e5, #bdbdbd);
       border: 3px outset #fff;
-      width: 30px;
-      height: 30px;
+      width: 35px;
+      height: 35px;
       text-align: center;
-      line-height: 30px;
+      line-height: 33px;
       font-size: 22px;
       cursor: pointer;
+      border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+      transition: all 0.1s ease;
+    }
+
+    .smiley:active {
+      border: 3px inset #7b7b7b;
+      background: #d0d0d0;
+      transform: scale(0.97);
     }
 
     .board {
       display: grid;
-      grid-template-columns: repeat(8, 30px);
-      grid-template-rows: repeat(8, 30px);
-      gap: 2px;
+      grid-template-columns: repeat(8, 32px);
+      grid-template-rows: repeat(8, 32px);
+      gap: 1px;
+      background: #808080;
+      padding: 3px;
+      border: 3px solid #7b7b7b;
+      box-shadow:
+        inset 2px 2px #ffffff,
+        inset -2px -2px #7b7b7b;
     }
 
     .cell {
-      background: #bdbdbd;
-      border: 3px outset #fff;
-      width: 30px;
-      height: 30px;
+      background: linear-gradient(180deg, #bdbdbd, #9b9b9b);
+      border: 2px outset #fff;
+      width: 32px;
+      height: 32px;
       text-align: center;
-      line-height: 30px;
+      line-height: 32px;
       font-weight: bold;
       cursor: pointer;
       user-select: none;
+      color: #000;
+      transition: background 0.1s, border 0.1s;
     }
 
     .cell.revealed {
-      border: 3px inset #7b7b7b;
+      border: 2px inset #7b7b7b;
       background: #dcdcdc;
+      color: #111;
       cursor: default;
     }
 
     .cell.mine {
-      background: red;
+      background: #ff4c4c;
     }
 
     .cell.flag::after {
       content: "🚩";
     }
+
+    /* Colores de números clásicos */
+    .cell.revealed[data-num="1"] { color: #0000ff; }
+    .cell.revealed[data-num="2"] { color: #007b00; }
+    .cell.revealed[data-num="3"] { color: #ff0000; }
+    .cell.revealed[data-num="4"] { color: #00007b; }
+    .cell.revealed[data-num="5"] { color: #7b0000; }
+    .cell.revealed[data-num="6"] { color: #007b7b; }
+    .cell.revealed[data-num="7"] { color: #000000; }
+    .cell.revealed[data-num="8"] { color: #7b7b7b; }
   </style>
 </head>
 <body>
@@ -100,34 +139,24 @@
   </div>
 
   <script>
-    // 🔊 Sonidos del Buscaminas
+    // 🔊 Sonidos
     const soundClick = new Audio('sounds/click.wav');
     const soundFlag = new Audio('sounds/flag.wav');
     const soundExplosion = new Audio('sounds/explosion.wav');
     const soundWin = new Audio('sounds/win.wav');
 
-    // ⚙️ Variables principales
-    const rows = 8;
-    const cols = 8;
-    const totalMines = 10;
+    const rows = 8, cols = 8, totalMines = 10;
     const board = document.getElementById("board");
     const mineCounter = document.getElementById("mineCounter");
     const resetBtn = document.getElementById("resetBtn");
     const timerDisplay = document.getElementById("timer");
 
-    let grid = [];
-    let gameOver = false;
-    let started = false;
-    let timer = null;
-    let seconds = 0;
-    let minesLeft = totalMines; // 🔢 minas restantes visibles
+    let grid = [], gameOver = false, started = false;
+    let timer = null, seconds = 0, minesLeft = totalMines;
 
-    // 🕐 Temporizador
     function startTimer() {
       if (started) return;
       started = true;
-      seconds = 0;
-      timerDisplay.textContent = "000";
       timer = setInterval(() => {
         if (!gameOver) {
           seconds++;
@@ -142,18 +171,17 @@
       started = false;
     }
 
-    // 🎮 Crear tablero
     function createBoard() {
       grid = [];
       board.innerHTML = "";
       gameOver = false;
       started = false;
-      resetBtn.textContent = "🙂";
       seconds = 0;
       stopTimer();
       timerDisplay.textContent = "000";
       minesLeft = totalMines;
       mineCounter.textContent = String(minesLeft).padStart(3, "0");
+      resetBtn.textContent = "🙂";
 
       for (let r = 0; r < rows; r++) {
         const row = [];
@@ -171,20 +199,18 @@
       countAdjacents();
     }
 
-    // 💣 Colocar minas
     function placeMines() {
-      let minesPlaced = 0;
-      while (minesPlaced < totalMines) {
+      let placed = 0;
+      while (placed < totalMines) {
         const r = Math.floor(Math.random() * rows);
         const c = Math.floor(Math.random() * cols);
         if (!grid[r][c].mine) {
           grid[r][c].mine = true;
-          minesPlaced++;
+          placed++;
         }
       }
     }
 
-    // 🔢 Contar minas adyacentes
     function countAdjacents() {
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -193,9 +219,8 @@
           for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
               const nr = r + dr, nc = c + dc;
-              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].mine) {
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].mine)
                 count++;
-              }
             }
           }
           grid[r][c].adjacent = count;
@@ -203,7 +228,6 @@
       }
     }
 
-    // 🟦 Revelar celda
     function revealCell(r, c) {
       const cell = grid[r][c];
       if (cell.revealed || cell.flagged || gameOver) return;
@@ -221,11 +245,13 @@
         soundClick.play();
         if (cell.adjacent > 0) {
           cell.element.textContent = cell.adjacent;
+          cell.element.dataset.num = cell.adjacent;
         } else {
           for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
               const nr = r + dr, nc = c + dc;
-              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) revealCell(nr, nc);
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                revealCell(nr, nc);
             }
           }
         }
@@ -234,16 +260,12 @@
       checkWin();
     }
 
-    // 🚩 Colocar o quitar bandera con contador dinámico
     function toggleFlag(r, c) {
       const cell = grid[r][c];
       if (cell.revealed || gameOver) return;
-
-      // alterna estado
       cell.flagged = !cell.flagged;
       cell.element.classList.toggle("flag");
 
-      // 🔢 actualiza contador visible
       if (cell.flagged) {
         minesLeft--;
         soundFlag.play();
@@ -251,14 +273,10 @@
         minesLeft++;
       }
 
-      // evita que muestre negativos o más de 999
       if (minesLeft < 0) minesLeft = 0;
-      if (minesLeft > 999) minesLeft = 999;
-
       mineCounter.textContent = String(minesLeft).padStart(3, "0");
     }
 
-    // 💀 Terminar juego
     function endGame(win) {
       gameOver = true;
       stopTimer();
@@ -275,7 +293,6 @@
       }
     }
 
-    // 🏁 Verificar victoria
     function checkWin() {
       let unrevealed = 0;
       for (let r = 0; r < rows; r++) {
@@ -283,32 +300,25 @@
           if (!grid[r][c].revealed && !grid[r][c].mine) unrevealed++;
         }
       }
-      if (unrevealed === 0 && !gameOver) {
-        endGame(true);
-      }
+      if (unrevealed === 0 && !gameOver) endGame(true);
     }
 
-    // 🖱 Eventos
-    board.addEventListener("click", (e) => {
+    board.addEventListener("click", e => {
       if (e.target.classList.contains("cell")) {
-        const r = +e.target.dataset.row;
-        const c = +e.target.dataset.col;
+        const r = +e.target.dataset.row, c = +e.target.dataset.col;
         revealCell(r, c);
       }
     });
 
-    board.addEventListener("contextmenu", (e) => {
+    board.addEventListener("contextmenu", e => {
       e.preventDefault();
       if (e.target.classList.contains("cell")) {
-        const r = +e.target.dataset.row;
-        const c = +e.target.dataset.col;
+        const r = +e.target.dataset.row, c = +e.target.dataset.col;
         toggleFlag(r, c);
       }
     });
 
     resetBtn.addEventListener("click", createBoard);
-
-    // Iniciar juego
     createBoard();
   </script>
 </body>
