@@ -280,7 +280,7 @@
     function endGame(win) {
       gameOver = true;
       stopTimer();
-      resetBtn.textContent = win ? "😎" : "💀";
+      resetBtn.textContent = win ? "😎" : "💩";
       if (win) soundWin.play();
       else soundExplosion.play();
 
