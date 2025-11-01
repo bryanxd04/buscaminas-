@@ -106,21 +106,51 @@
     const soundExplosion = new Audio('sounds/explosion.wav');
     const soundWin = new Audio('sounds/win.wav');
 
+    // ⚙️ Variables principales
     const rows = 8;
     const cols = 8;
     const mineCount = 10;
     const board = document.getElementById("board");
     const mineCounter = document.getElementById("mineCounter");
     const resetBtn = document.getElementById("resetBtn");
+    const timerDisplay = document.getElementById("timer");
 
     let grid = [];
     let gameOver = false;
+    let started = false;
+    let timer = null;
+    let seconds = 0;
 
+    // 🕐 Funciones del temporizador
+    function startTimer() {
+      if (started) return;
+      started = true;
+      seconds = 0;
+      timerDisplay.textContent = "000";
+      timer = setInterval(() => {
+        if (!gameOver) {
+          seconds++;
+          if (seconds > 999) seconds = 999;
+          timerDisplay.textContent = String(seconds).padStart(3, "0");
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+      started = false;
+    }
+
+    // 🎮 Crear tablero
     function createBoard() {
       grid = [];
       board.innerHTML = "";
       gameOver = false;
+      started = false;
       resetBtn.textContent = "🙂";
+      mineCounter.textContent = String(mineCount).padStart(3, "0");
+      timerDisplay.textContent = "000";
+      stopTimer();
 
       for (let r = 0; r < rows; r++) {
         const row = [];
@@ -138,6 +168,7 @@
       countAdjacents();
     }
 
+    // 💣 Colocar minas aleatoriamente
     function placeMines() {
       let minesPlaced = 0;
       while (minesPlaced < mineCount) {
@@ -148,9 +179,9 @@
           minesPlaced++;
         }
       }
-      mineCounter.textContent = String(mineCount).padStart(3, "0");
     }
 
+    // 🔢 Contar minas adyacentes
     function countAdjacents() {
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -169,23 +200,25 @@
       }
     }
 
+    // 🟦 Revelar celda
     function revealCell(r, c) {
       const cell = grid[r][c];
       if (cell.revealed || cell.flagged || gameOver) return;
+
+      startTimer(); // 🕐 Inicia al primer clic
       cell.revealed = true;
       cell.element.classList.add("revealed");
 
       if (cell.mine) {
         cell.element.textContent = "💣";
         cell.element.classList.add("mine");
-        soundExplosion.play(); // 💥 Sonido de explosión
+        soundExplosion.play();
         endGame(false);
       } else {
-        soundClick.play(); // 🎵 Sonido al hacer clic en una celda
+        soundClick.play();
         if (cell.adjacent > 0) {
           cell.element.textContent = cell.adjacent;
         } else {
-          // auto-reveal nearby
           for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
               const nr = r + dr, nc = c + dc;
@@ -194,20 +227,27 @@
           }
         }
       }
+
+      checkWin();
     }
 
+    // 🚩 Colocar o quitar bandera
     function toggleFlag(r, c) {
       const cell = grid[r][c];
       if (cell.revealed || gameOver) return;
       cell.flagged = !cell.flagged;
       cell.element.classList.toggle("flag");
-      soundFlag.play(); // 🚩 Sonido al colocar bandera
+      soundFlag.play();
     }
 
+    // 💀 Terminar juego
     function endGame(win) {
       gameOver = true;
-      if (win) soundWin.play(); // 🏆 Sonido de victoria
+      stopTimer();
       resetBtn.textContent = win ? "😎" : "💀";
+      if (win) soundWin.play();
+      else soundExplosion.play();
+
       if (!win) {
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
@@ -217,6 +257,20 @@
       }
     }
 
+    // 🏁 Verificar victoria
+    function checkWin() {
+      let unrevealed = 0;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (!grid[r][c].revealed && !grid[r][c].mine) unrevealed++;
+        }
+      }
+      if (unrevealed === 0 && !gameOver) {
+        endGame(true);
+      }
+    }
+
+    // 🖱 Eventos
     board.addEventListener("click", (e) => {
       if (e.target.classList.contains("cell")) {
         const r = +e.target.dataset.row;
