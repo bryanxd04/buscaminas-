@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscaminas - Bryan Rocha Moreno</title>
+  <style>
+    body {
+      background: #c0c0c0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .game-container {
+      background: #bdbdbd;
+      border: 4px solid #808080;
+      box-shadow: inset 4px 4px #ffffff, inset -4px -4px #808080;
+      padding: 10px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #bdbdbd;
+      border: 3px solid #7b7b7b;
+      box-shadow: inset 3px 3px #fff, inset -3px -3px #7b7b7b;
+      padding: 5px 10px;
+      margin-bottom: 10px;
+    }
+
+    .counter, .timer {
+      background: black;
+      color: red;
+      font-family: monospace;
+      font-size: 20px;
+      padding: 5px 10px;
+      border: 2px inset #7b7b7b;
+      width: 60px;
+      text-align: right;
+    }
+
+    .smiley {
+      background: #c0c0c0;
+      border: 3px outset #fff;
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(8, 30px);
+      grid-template-rows: repeat(8, 30px);
+      gap: 2px;
+    }
+
+    .cell {
+      background: #bdbdbd;
+      border: 3px outset #fff;
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .cell.revealed {
+      border: 3px inset #7b7b7b;
+      background: #dcdcdc;
+      cursor: default;
+    }
+
+    .cell.mine {
+      background: red;
+    }
+
+    .cell.flag::after {
+      content: "🚩";
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="header">
+      <div class="counter" id="mineCounter">010</div>
+      <div class="smiley" id="resetBtn">🙂</div>
+      <div class="timer" id="timer">000</div>
+    </div>
+
+    <div class="board" id="board"></div>
+  </div>
+
+  <script>
+    const rows = 8;
+    const cols = 8;
+    const mineCount = 10;
+    const board = document.getElementById("board");
+    const mineCounter = document.getElementById("mineCounter");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let grid = [];
+    let gameOver = false;
+
+    function createBoard() {
+      grid = [];
+      board.innerHTML = "";
+      gameOver = false;
+      resetBtn.textContent = "🙂";
+
+      for (let r = 0; r < rows; r++) {
+        const row = [];
+        for (let c = 0; c < cols; c++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          board.appendChild(cell);
+          row.push({ element: cell, mine: false, revealed: false, flagged: false, adjacent: 0 });
+        }
+        grid.push(row);
+      }
+      placeMines();
+      countAdjacents();
+    }
+
+    function placeMines() {
+      let minesPlaced = 0;
+      while (minesPlaced < mineCount) {
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
+        if (!grid[r][c].mine) {
+          grid[r][c].mine = true;
+          minesPlaced++;
+        }
+      }
+      mineCounter.textContent = String(mineCount).padStart(3, "0");
+    }
+
+    function countAdjacents() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (grid[r][c].mine) continue;
+          let count = 0;
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const nr = r + dr, nc = c + dc;
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].mine) {
+                count++;
+              }
+            }
+          }
+          grid[r][c].adjacent = count;
+        }
+      }
+    }
+
+    function revealCell(r, c) {
+      const cell = grid[r][c];
+      if (cell.revealed || cell.flagged || gameOver) return;
+      cell.revealed = true;
+      cell.element.classList.add("revealed");
+
+      if (cell.mine) {
+        cell.element.textContent = "💣";
+        cell.element.classList.add("mine");
+        endGame(false);
+      } else {
+        if (cell.adjacent > 0) {
+          cell.element.textContent = cell.adjacent;
+        } else {
+          // auto-reveal nearby
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const nr = r + dr, nc = c + dc;
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) revealCell(nr, nc);
+            }
+          }
+        }
+      }
+    }
+
+    function toggleFlag(r, c) {
+      const cell = grid[r][c];
+      if (cell.revealed || gameOver) return;
+      cell.flagged = !cell.flagged;
+      cell.element.classList.toggle("flag");
+    }
+
+    function endGame(win) {
+      gameOver = true;
+      resetBtn.textContent = win ? "😎" : "💀";
+      if (!win) {
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (grid[r][c].mine) grid[r][c].element.textContent = "💣";
+          }
+        }
+      }
+    }
+
+    board.addEventListener("click", (e) => {
+      if (e.target.classList.contains("cell")) {
+        const r = +e.target.dataset.row;
+        const c = +e.target.dataset.col;
+        revealCell(r, c);
+      }
+    });
+
+    board.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      if (e.target.classList.contains("cell")) {
+        const r = +e.target.dataset.row;
+        const c = +e.target.dataset.col;
+        toggleFlag(r, c);
+      }
+    });
+
+    resetBtn.addEventListener("click", createBoard);
+
+    createBoard();
+  </script>
+</body>
+</html>
